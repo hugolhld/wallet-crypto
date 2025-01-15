@@ -1,0 +1,49 @@
+services:
+  # PostgreSQL avec PostGIS
+  postgres:
+    build: .
+    image: postgis/postgis:17-3.5
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - ./schema:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend_network
+
+  # Adminer
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - backend_network
+
+  # API Node.js
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node_api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./api:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - backend_network
+    depends_on:
+      - postgres
+
+networks:
+  backend_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
