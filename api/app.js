@@ -41,7 +41,6 @@ app.use('/api/v1/profile/wallet', require('./routes/profile/wallet'));
 app.use('/api/v1/profile/favorite_currency', require('./routes/profile/favorite_currency'));
 app.use('/api/v1/wallet/get_data', require('./routes/wallet/get_data'));
 
-
 // Middleware pour gérer les erreurs 404
 app.use(handle404);
 

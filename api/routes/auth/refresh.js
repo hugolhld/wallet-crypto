@@ -4,6 +4,10 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
+// hash token
+// delete and create new token at each refresh
+
+
 router.post('/', async (req, res) => {
 //   const { refreshToken } = req.body;
 
