@@ -51,7 +51,7 @@ const fetchValidatedBlocks = async (wallet, etherscanApiKey) => {
         module: 'account',
         action: 'getminedblocks',
         address: wallet,
-        blocktype: 'blocks', // Use 'blocks' for validated blocks
+        blocktype: 'blocks',
         apikey: etherscanApiKey,
     };
     const queryString = querystring.stringify(baseParams);
@@ -94,9 +94,24 @@ router.get('/wallet-evolution/:currency/:wallet', async (req, res) => {
             'api.etherscan.io'
         );
 
+        const validatedBlocks = await fetchValidatedBlocks(wallet, etherscanApiKey);
+
         const allTransactions = [...normalTransactions, ...internalTransactions];
 
-        allTransactions.sort((a, b) => parseInt(a.timeStamp, 10) - parseInt(b.timeStamp, 10));
+        validatedBlocks.forEach(block => {
+            allTransactions.push({
+                timeStamp: block.timeStamp,
+                value: block.blockReward,
+                from: 'mining',
+                to: wallet.toLowerCase(),
+                gasUsed: '0',
+                gasPrice: '0',
+                hash: `block-${block.blockNumber}`,
+                blockNumber: block.blockNumber,
+            });
+        });
+
+        allTransactions.sort((a, b) => a.timeStamp - b.timeStamp);
 
         console.log(`Total unique transactions fetched: ${allTransactions.length}`);
 
