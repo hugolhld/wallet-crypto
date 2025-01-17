@@ -1,7 +1,9 @@
 const express = require('express');
 const querystring = require('querystring');
 const fetchData = require('../../utils/fetchHttps');
-// const db = require('../../database/db');
+const db = require('../../database/db');
+const { ethers } = require('ethers');
+
 
 const router = express.Router();
 
@@ -16,8 +18,9 @@ const fetchIncrementalTransactions = async (baseParams, baseUrl) => {
         const queryString = querystring.stringify(blockParams);
         const response = await fetchData(baseUrl, `/api?${queryString}`);
 
-        if (response.status !== '1' || response.result.length === 0) {
-            console.log('No more transactions to fetch.');
+        if (response.status !== '1' /* || response.result.length === 0 */) {
+            // console.log('No more transactions to fetch.');
+            console.log(response.status);
             hasMore = false;
             break;
         }
@@ -27,9 +30,13 @@ const fetchIncrementalTransactions = async (baseParams, baseUrl) => {
         const newTransactions = transactions.filter(tx => !seenTransactions.has(tx.hash));
         newTransactions.forEach(tx => seenTransactions.add(tx.hash));
 
-        allTransactions = [...allTransactions, ...newTransactions];
+        if (newTransactions.length === 0) {
+            console.log('No new transactions to fetch.');
+            hasMore = false;
+            break;
+        }
 
-        // console.log(allTransactions)
+        allTransactions.push(...newTransactions);
 
         console.log(`Fetched ${newTransactions.length} new transactions starting from block ${currentStartBlock}`);
 
@@ -38,6 +45,25 @@ const fetchIncrementalTransactions = async (baseParams, baseUrl) => {
 
     return allTransactions;
 };
+
+const fetchValidatedBlocks = async (wallet, etherscanApiKey) => {
+    const baseParams = {
+        module: 'account',
+        action: 'getminedblocks',
+        address: wallet,
+        blocktype: 'blocks', // Use 'blocks' for validated blocks
+        apikey: etherscanApiKey,
+    };
+    const queryString = querystring.stringify(baseParams);
+
+    const response = await fetchData('api.etherscan.io', `/api?${queryString}`);
+    if (response.status !== '1') {
+        console.error('Failed to fetch validated blocks:', response.message);
+        return [];
+    }
+    return response.result;
+};
+
 
 router.get('/wallet-evolution/:currency/:wallet', async (req, res) => {
     const { currency, wallet } = req.params;
@@ -69,30 +95,32 @@ router.get('/wallet-evolution/:currency/:wallet', async (req, res) => {
         );
 
         const allTransactions = [...normalTransactions, ...internalTransactions];
-        console.log(allTransactions)
+
+        allTransactions.sort((a, b) => parseInt(a.timeStamp, 10) - parseInt(b.timeStamp, 10));
+
         console.log(`Total unique transactions fetched: ${allTransactions.length}`);
 
-        let startBalance = 0;
+        let startBalanceWei = BigInt(0);
         const cumulativeBalances = allTransactions.map((tx) => {
-            const valueETH = parseFloat(tx.value) / 10 ** 18;
-            const gasFee = tx.gas && tx.gasPrice ? (parseFloat(tx.gas) * parseFloat(tx.gasPrice)) / 10 ** 18 : 0;
+            const valueWei = BigInt(tx.value);
+            const gasFeeWei = tx.gasUsed && tx.gasPrice ? BigInt(tx.gasUsed) * BigInt(tx.gasPrice) : BigInt(0);
 
             if (tx.from.toLowerCase() === wallet.toLowerCase()) {
-                startBalance -= valueETH + gasFee;
-            } else {
-                startBalance += valueETH;
+                startBalanceWei -= valueWei + gasFeeWei;
+            } else if (tx.to.toLowerCase() === wallet.toLowerCase()) {
+                startBalanceWei += valueWei;
             }
 
             return {
                 date: new Date(tx.timeStamp * 1000).toISOString().split('T')[0],
-                cumulative_balance_eth: Math.max(startBalance, 0),
+                cumulative_balance_wei: startBalanceWei.toString(),
             };
         });
 
         const consolidatedBalances = cumulativeBalances.reduce((acc, balance) => {
             const existingEntry = acc.find((entry) => entry.date === balance.date);
             if (existingEntry) {
-                existingEntry.cumulative_balance_eth = balance.cumulative_balance_eth;
+                existingEntry.cumulative_balance_wei = balance.cumulative_balance_wei;
             } else {
                 acc.push({ ...balance });
             }
@@ -121,10 +149,12 @@ router.get('/wallet-evolution/:currency/:wallet', async (req, res) => {
 
             return {
                 date: balance.date,
-                cumulative_balance_eth: balance.cumulative_balance_eth,
+                wei: balance.cumulative_balance_eth,
+                cumulative_balance_eth: ethers.formatEther(balance.cumulative_balance_wei),
                 cumulative_balance_currency: priceInCurrency
-                    ? balance.cumulative_balance_eth * priceInCurrency.close
+                    ? Number((Number(ethers.formatEther(balance.cumulative_balance_wei)) * priceInCurrency.close).toFixed(2))
                     : null,
+                price: priceInCurrency ? priceInCurrency.close : null
             };
         });
 
