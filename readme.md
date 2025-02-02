@@ -10,8 +10,9 @@
 ### ⚙️ 1 - Configuration du Backend
 
 1. Ouvrir le projet dans un éditeur.
-2. Copier le fichier `.env.example` et le renommer en `.env`.
-3. Remplir tous les champs nécessaires :
+2. Dans le dossier `/api` Copier le fichier `.env.example` et le renommer en `.env`.
+3. Pour le config de mail, vous pouvez utilisez vos propres systeme ou alors je vous conseil [MailTrap](http://mailtrap.io/) pour les tests.
+4. Remplir tous les champs nécessaires :
    - **API KEY requises** :
      - [EtherScanAPI](https://etherscan.io/apis)
      - [CryptoCompareAPI](https://www.cryptocompare.com/)
@@ -19,12 +20,12 @@
    ```bash
    cp .env.example .env
    ```
-5. Remplissez les informations de votre base de données dans le fichier `.env`.
-6. Lancez les conteneurs Docker :
+6. Remplissez les informations de votre base de données dans le fichier `.env`.
+7. Lancez les conteneurs Docker :
    ```bash
    docker compose up --build
    ```
-7. Attendez la création des conteneurs.
+8. Attendez la création des conteneurs.
 
 ---
 
