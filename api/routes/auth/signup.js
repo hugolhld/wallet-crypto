@@ -38,7 +38,8 @@ router.post(
                 [email, hashedPassword, 2, confirmatedToken]
             );
 
-            const newUser = result.rows[0];
+            // TO DO: HASH CONFIRMATION TOKEN
+            // const confirmatedTokenHash = await bcrypt.hash(confirmatedToken, 10);
 
             const confirmationUrl = `${process.env.FRONTEND_URL}/verify-email/${confirmatedToken}`;
 
