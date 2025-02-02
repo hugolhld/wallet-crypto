@@ -1,30 +1,57 @@
-# Scan wallet ETH project
+# 🚀 Scan Wallet ETH Project
 
-## Set up the project
+## 📌 Introduction
+**Scan Wallet ETH** est une application permettant de suivre et gérer plusieurs portefeuilles Ethereum en temps réel.
 
-### 1 - Set up backend
+---
 
-- Open project foler in editor
-- Copy `.env.example` to `.env`
-- Fill all fields
-- You should have an API KEY for [EtherScanAPI]() and [CryptoCompareAPI]()
+## 🛠️ Installation et Configuration
 
-- After, in terminal go at root of project
-- Copy `.env.example` to `.env` and fillt it with your database information
-- Run `docker compose up --build`
-- Wait containers creation
+### ⚙️ 1 - Configuration du Backend
 
-### 2 - Set up frontend
+1. Ouvrir le projet dans un éditeur.
+2. Copier le fichier `.env.example` et le renommer en `.env`.
+3. Remplir tous les champs nécessaires :
+   - **API KEY requises** :
+     - [EtherScanAPI](https://etherscan.io/apis)
+     - [CryptoCompareAPI](https://www.cryptocompare.com/)
+4. Dans un terminal, placez-vous à la racine du projet :
+   ```bash
+   cp .env.example .env
+   ```
+5. Remplissez les informations de votre base de données dans le fichier `.env`.
+6. Lancez les conteneurs Docker :
+   ```bash
+   docker compose up --build
+   ```
+7. Attendez la création des conteneurs.
 
-- In terminal, at root of project
-- Run `cd front`
-- Copy `.env.example` to `.env`
-- Run `npm install`
-- Run `npm run start`
-- You should have the link of app
+---
 
-### 3 - Test project
+### 🎨 2 - Configuration du Frontend
 
-- You can create a account
-- Test to add a lots of wallet in profile
-- In dashboard you can check all wallet with select
+1. Dans un terminal, à la racine du projet :
+   ```bash
+   cd front
+   ```
+2. Copier le fichier `.env.example` et le renommer en `.env` :
+   ```bash
+   cp .env.example .env
+   ```
+3. Installer les dépendances :
+   ```bash
+   npm install
+   ```
+4. Démarrer l’application :
+   ```bash
+   npm run start
+   ```
+5. Vous devriez voir le lien de l'application s'afficher dans le terminal.
+
+---
+
+### 🧪 3 - Tester le Projet
+
+✔️ **Créer un compte**  
+✔️ **Ajouter plusieurs portefeuilles à votre profil**  
+✔️ **Accéder au tableau de bord pour consulter et sélectionner vos portefeuilles**  
